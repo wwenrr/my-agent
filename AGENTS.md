@@ -4,28 +4,60 @@
 - File này áp dụng cho toàn bộ repository, trừ khi có `AGENTS.md` khác nằm sâu hơn ghi đè trong thư mục con.
 - Mọi agent làm việc trong repo này phải đọc và tuân thủ các rule bên dưới trước khi sửa file.
 
-## MEMORY RULES (luôn làm khi user yêu cầu)
+## MEMORY RULES (bắt buộc trước và trong mọi task)
+
+### 1. Read Memory Before Work
+- Trước khi làm bất cứ task nào, agent phải kiểm tra và đọc `.agent/memory.md` nếu file tồn tại.
+- `.agent/memory.md` là entrypoint/index bắt buộc, dùng để biết memory nào liên quan cần đọc tiếp.
+- Không bắt buộc đọc toàn bộ file trong `.agent/memories/` mọi lúc; chỉ đọc file con liên quan theo index để tránh tốn context.
+- Nếu `.agent/memory.md` chưa tồn tại, tiếp tục task bình thường và chỉ tạo khi cần lưu memory.
+
+### 2. Memory Structure
+- Dùng `.agent/memory.md` làm index/router, không nhồi toàn bộ memory dài vào một file.
+- Memory chi tiết phải lưu thành nhiều file markdown trong `.agent/memories/` theo chủ đề.
+- Các file con gợi ý:
+  - `.agent/memories/user-preferences.md`: sở thích, thói quen, cách user muốn agent làm việc.
+  - `.agent/memories/project-context.md`: bối cảnh repo/project, mục tiêu dài hạn.
+  - `.agent/memories/coding-style.md`: style code, conventions, preference kỹ thuật.
+  - `.agent/memories/decisions.md`: quyết định quan trọng đã chốt và lý do.
+  - `.agent/memories/workflows.md`: workflow lặp lại, command hay dùng, quy trình làm việc.
+- Khi tạo hoặc cập nhật file con, phải update `.agent/memory.md` để link tới file đó và tóm tắt nội dung chính.
+
+### 3. Explicit Save Triggers
 - Khi user nói: `remember`, `ghi nhớ`, `save to memory`, `lưu thói quen`, `note that`, `add this permanently`, hoặc câu tương đương có ý muốn lưu lâu dài:
-  1. Tạo thư mục `.agent/` nếu chưa có.
-  2. Update file `.agent/memory.md` bằng cách append một section mới với timestamp hiện tại.
-  3. Format phải đẹp, đúng dạng:
+  1. Tạo thư mục `.agent/` và `.agent/memories/` nếu chưa có.
+  2. Chọn đúng file con trong `.agent/memories/` hoặc tạo file mới nếu chủ đề chưa có.
+  3. Append section mới với timestamp hiện tại vào file con.
+  4. Update `.agent/memory.md` với summary/link tới file con.
+  5. Format section trong file con phải đẹp, đúng dạng:
      ```markdown
      ### [YYYY-MM-DD HH:mm] - [Chủ đề ngắn]
      Nội dung chi tiết...
      ```
-  4. Timestamp dùng timezone local của môi trường hiện tại nếu biết; nếu không biết thì dùng timezone hệ thống.
-  5. Chủ đề ngắn phải súc tích, mô tả nội dung được ghi nhớ.
-  6. Không ghi đè hoặc xoá memory cũ nếu user không yêu cầu rõ ràng.
-  7. Sau khi lưu, trả lời ngắn gọn rằng đã ghi nhớ và nêu file đã cập nhật.
+  6. Timestamp dùng timezone local của môi trường hiện tại nếu biết; nếu không biết thì dùng timezone hệ thống.
+  7. Chủ đề ngắn phải súc tích, mô tả nội dung được ghi nhớ.
+  8. Không ghi đè hoặc xoá memory cũ nếu user không yêu cầu rõ ràng.
+  9. Sau khi lưu, trả lời ngắn gọn rằng đã ghi nhớ và nêu file đã cập nhật.
 
+### 4. Proactive Memory Capture
+- Agent được phép chủ động đề xuất lưu memory khi phát hiện:
+  - Preference/thói quen user lặp lại nhiều lần.
+  - Quyết định project quan trọng có tác động lâu dài.
+  - Workflow hoặc command user muốn dùng lại.
+  - Rule vận hành agent mà user nhấn mạnh.
+- Nếu user không dùng explicit save trigger, agent không được tự ghi thẳng vào memory.
+- Với memory suy luận từ hội thoại, phải hỏi xác nhận trước: `Bạn muốn mình lưu điều này vào memory không?`
+- Chỉ lưu sau khi user đồng ý rõ ràng.
+
+### 5. Read / Update / Delete Memory
 - Khi user yêu cầu xem lại memory, thói quen, ghi nhớ, hoặc preference đã lưu:
-  1. Đọc `.agent/memory.md` nếu tồn tại.
-  2. Tóm tắt rõ ràng các mục liên quan.
-  3. Nếu file chưa tồn tại hoặc chưa có nội dung, nói rõ là chưa có memory đã lưu.
-
+  1. Đọc `.agent/memory.md` trước.
+  2. Đọc thêm file con liên quan trong `.agent/memories/` nếu cần.
+  3. Tóm tắt rõ ràng các mục liên quan.
+  4. Nếu chưa có memory, nói rõ là chưa có memory đã lưu.
 - Khi user yêu cầu xoá/sửa memory:
-  1. Chỉ sửa đúng mục liên quan.
-  2. Không tự ý xoá toàn bộ file nếu user không yêu cầu rõ ràng.
+  1. Chỉ sửa đúng mục liên quan trong file con và update index nếu cần.
+  2. Không tự ý xoá toàn bộ `.agent/` hoặc `.agent/memories/` nếu user không yêu cầu rõ ràng.
   3. Nếu yêu cầu mơ hồ, hỏi lại trước khi xoá dữ liệu.
 
 ## GIT RULES (bắt buộc)
