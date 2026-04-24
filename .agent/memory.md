@@ -6,7 +6,7 @@ File này là entrypoint/index bắt buộc đọc trước mỗi task. Chỉ đ
 
 - [User Preferences](memories/user-preferences.md): sở thích, thói quen, cách user muốn agent làm việc.
 - [Project Context](memories/project-context.md): bối cảnh repo/project, mục tiêu dài hạn.
-- [Coding Style](memories/coding-style.md): style code, conventions, preference kỹ thuật.
+- [Coding Style](memories/coding-style.md): style code, conventions, preference kỹ thuật; ưu tiên hash map/lookup map thay cho chuỗi `if/else` dài khi phù hợp.
 - [Decisions](memories/decisions.md): quyết định quan trọng đã chốt và lý do.
 - [Workflows](memories/workflows.md): workflow lặp lại, command hay dùng, quy trình làm việc.
 
@@ -15,3 +15,4 @@ File này là entrypoint/index bắt buộc đọc trước mỗi task. Chỉ đ
 - User muốn agent đọc memory index trước khi làm task.
 - User muốn memory dài được chia thành nhiều file markdown theo chủ đề, còn `.agent/memory.md` đóng vai trò index/router.
 - User muốn agent chỉ ghi thẳng vào memory khi có yêu cầu rõ ràng; nếu agent chủ động phát hiện điều đáng lưu thì phải hỏi xác nhận trước.
+- Khi update/bổ sung rule hoặc memory vận hành, ưu tiên dùng sub-agent cập nhật file nếu môi trường cho phép; main agent kiểm tra và tổng hợp.
